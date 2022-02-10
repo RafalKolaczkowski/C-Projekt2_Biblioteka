@@ -68,7 +68,6 @@ public:
 	const int Get_Liczba_Ksiazek()const { return Zasoby.size(); }
 
 	static const int Naleznosc = 1;							//20 groszy za dzien za ksiazke
-	//void Szukaj_Ksiazki_ID(int input_ID_Ksiazki);			//zwraca indeks w wektorze Zasoby
 };
 
 void Biblioteka::Inicjalizacja_Biblioteki(int N_Kont, int N_Filii)
@@ -190,23 +189,13 @@ void Biblioteka::Aktualizuj_Stan_Wypozyczenia(int dlugosc_tury)
 		}
 }
 
-//void Biblioteka::Szukaj_Ksiazki_ID(int input_ID_Ksiazki){
-/*	vector<int> indeksy;
+/*void Biblioteka::Szukaj_Ksiazki_ID(int input_ID_Ksiazki) {
 	
 	auto i = Zasoby.begin(), end = Zasoby.end();
 	do {
-		auto it = std::find_if(i, end, [&](unique_ptr<Konto>& k) {return k->Get_ID() == input_ID_Ksiazki; });
-		indeksy.emplace_back(distance(Zasoby.begin(), it));
-		//indeksy.emplace_back(distance(Zasoby.begin(), find_if(i, end, [&](unique_ptr<Konto>& k) {return k->Get_ID()== input_ID_Ksiazki; })));
-		i++;
-	} while (i != end);
-	for (int j = 0; j < indeksy.size(); j++)
-		Zasoby[indeksy[j]].Drukuj();*/
-
-	/*auto i = Zasoby.begin(), end = Zasoby.end();
-	do {
 		find_if(i, end, [&](Ksiazka k) {return k.GetID()  == input_ID_Ksiazki; })->Drukuj();
 		i++;
-	} while (i != end);*/
+	} while (i != end);
 
-	//find_if(Zasoby.begin(), Zasoby.end(), [&](Ksiazka* k) {return k->GetID() == input_ID_Ksiazki; })->Drukuj();}
+	find_if(Zasoby.begin(), Zasoby.end(), [&](Ksiazka* k) {return k->GetID() == input_ID_Ksiazki; })->Drukuj();
+}*/
