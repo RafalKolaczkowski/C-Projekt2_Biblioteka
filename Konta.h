@@ -2,27 +2,26 @@
 
 #include <iostream>
 #include <string>
-#include "RandomGenerator.h"
 #include <vector>
 #include "Biblioteka.h"
-#include <memory>
+#include "RandomGenerator.h"
 
 using namespace std;
 
 class Ksiazka;
 
-class Konto
+class Konto													//Stworzone sa dwa typy Konta, student (czas na oddanie ksiazki 30 dni) i pracownik uczelni (czas na oddanie ksiazki 90 dni)
 {
 private:
 	string Nazwisko;
 	int ID;
-	int Naleznosc = 0;
+	int Naleznosc = 0;										//Kwota do zaplaty za zaleganie z oddawaniem ksiazek
 public:
-	Konto() {}
+	Konto() {}												//Konstruktor domyslny potrzebny dla zainicjowania wektora bez inicjowania jego zawartosci od razu
 	Konto(string input_Nazwisko, int input_ID)
 		:Nazwisko(input_Nazwisko), ID(input_ID) {}
 
-	vector<Ksiazka> Wypozyczone;
+	vector<Ksiazka> Wypozyczone;							//Spis ksiazek, ktore zostaly wypozyczone przez wlasciciel konta
 
 	const string Get_Nazwisko() const { return Nazwisko; }
 	const int Get_ID() const { return ID; }
@@ -36,7 +35,7 @@ public:
 class Student :public Konto
 {
 private:
-	bool przywileje = 0;
+	bool przywileje = 0;									//Brak przywileju do 90 dniowego wypozyczania ksiazek
 public:
 	Student(string input_Nazwisko, int input_ID)
 		:Konto(input_Nazwisko, input_ID) {}
@@ -48,7 +47,7 @@ public:
 class Pracownik :public Konto
 {
 private:
-	bool przywileje = 1;
+	bool przywileje = 1;									//Przywilej do 90 dniowego wypozyczania ksiazek
 public:
 	Pracownik(string input_Nazwisko, int input_ID)
 		:Konto(input_Nazwisko, input_ID) {}

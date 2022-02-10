@@ -1,30 +1,27 @@
 ﻿#pragma once
 
 #include <iostream>
-#include "Biblioteka.h"
-#include "Konta.h"
 #include <string>
+#include "Biblioteka.h"
 
 using namespace std;
 
-class Symulacja
+class Symulacja												//obiekt stanowiacy centrum programu.
 {
 private:
-	Biblioteka *B;
+	Biblioteka *B;											//instancja obiektu Biblioteka. W nim znajduje sie wiekszosc potrzebnych metod
 	int Liczba_Kont;
-	int Liczba_Filii;
-	int numer_tury = 0;
-	int dlugosc_tury = 5;		//iteracja co 5 dni
+	int Liczba_Filii;										//Filie reprezentuja mozliwosc wielu bibliotek wspoltworzacych system
+	int numer_tury = 0;										//iteracja bedzie sie odbywala po tej zmiennej
+	int dlugosc_tury = 5;									//iteracja co 5 dni
 public:
 	Symulacja(int input_Liczba_Kont, int input_Liczba_Filii) 
 		:Liczba_Kont(input_Liczba_Kont), Liczba_Filii(input_Liczba_Filii)
 	{
-	this->B = new Biblioteka(Liczba_Filii, Liczba_Kont);
+	this->B = new Biblioteka(Liczba_Filii, Liczba_Kont);	//generowanie kont i ksiazek
 	}
 	void Akcja_Gracza();									//podanie mozliwych akcji w turze
-	void Aktualizuj_Stan_Wypozyczenia();					//aktualizacja czasu do oddania, naliczenie oplat, sprawdzenie czy mozna wypozyczac?
-	//void stan_gry();										//?
-	//int warunek_konca_gry();								//?
+	void Aktualizuj_Stan_Wypozyczenia();					//aktualizacja czasu do oddania, naliczenie oplat
 	void Tura();											//iteracja, tj naliczanie naleznosci i plyniecie czasu
 	void Symuluj();											//iteracja po turach
 };
@@ -44,6 +41,7 @@ void Symulacja::Akcja_Gracza()
 	cout << "przedluz\tPrzedluz wypozyczenie ksiazek" << endl;
 	cout << "zaplac\t\tZaplac kare za nieoddanie ksiazek w terminie" << endl;
 	cout << "e\t\tSkoncz ture" << endl;
+	cout << "\n\n";
 
 	std::string Komenda;
 
@@ -113,6 +111,7 @@ void Symulacja::Akcja_Gracza()
 		}
 		else if (Komenda == "e") {}
 		else { cout << "Blad, sprobuj ponownie" << endl; }
+		cout << endl;
 	} while (Komenda != "e");
 }
 
@@ -120,7 +119,7 @@ void Symulacja::Tura()
 {
 	if (numer_tury == 0)
 	{
-		cout << "\n\n********************" << endl;
+		cout << "\n********************" << endl;
 		cout << "Witaj w systemie biblioteki" << endl;
 	}
 	if (numer_tury != 0)
@@ -139,5 +138,5 @@ void Symulacja::Symuluj()
 	{
 		Tura();
 		numer_tury++;
-	} while (numer_tury < 1000);
+	} while (numer_tury < 1000);						//Ograniczenie czasu trwania symulacji do 1000 tur
 }

@@ -61,7 +61,6 @@ std::string Random_Name()
 
     std::uniform_int_distribution<std::size_t> fnd{ 0, first_names.size() - 1 };
     std::uniform_int_distribution<std::size_t> lnd{ 0, last_names.size() - 1 };
-    //std::uniform_int_distribution<std::size_t> distribution(0, first_names.size() - 1);
 
     std::size_t number_first_names = fnd(generator);
     std::size_t number_last_names = lnd(generator);
@@ -105,17 +104,10 @@ std::string Random_Book_Name()
     return result[number];
 }
 
-int Random_Book_ID()
-{
-    std::mt19937 generator(std::random_device{}());
-    std::uniform_int_distribution<std::mt19937::result_type> result(100000, 999999);      //0 - student, 1 - pracownik
-    return result(generator);
-}
-
 int Random_Book_Number()
 {
     std::mt19937 generator(std::random_device{}());
-    std::uniform_int_distribution<std::mt19937::result_type> result(10, 20);      //0 - student, 1 - pracownik
+    std::uniform_int_distribution<std::mt19937::result_type> result(10, 20);
     return result(generator);
 }
 

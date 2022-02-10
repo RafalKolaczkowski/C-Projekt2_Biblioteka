@@ -2,11 +2,11 @@
 
 #include <iostream>
 #include <string>
-#include "RandomGenerator.h"
 #include <vector>
-#include "Konta.h"
 #include <memory>
 #include <iterator>
+#include "RandomGenerator.h"
+#include "Konta.h"
 
 using namespace std;
 
@@ -15,14 +15,14 @@ class Ksiazka
 private:
 	string Nazwa;
 	int ID;
-	int Filia_ID;
-	bool wymagane_uprawnienia;
-	bool stan_wypozyczenia;
-	int czas_do_oddania;
-	int ID_Konta_Wypozyczajacego;
+	int Filia_ID;								//Filie reprezentuja mozliwosc wielu bibliotek wspoltworzacych system
+	bool typ_konta;								//0 - student, 1 - pracownik uczelni
+	bool stan_wypozyczenia;						//0 - niewypozyczone, 1 - wypozyczone
+	int czas_do_oddania;						//termin, po ktorym zacznie byc naliczana kara
+	int ID_Konta_Wypozyczajacego;				//informacja, kto ma w tym momencie ksiazke. Gdy jest to biblioteka, ma wartosc NULL
 public:
-	Ksiazka(string input_Nazwa, int input_ID, int input_Filia_ID, bool input_wymagane_uprawnienia)
-		:Nazwa(input_Nazwa), ID(input_ID), Filia_ID(input_Filia_ID), wymagane_uprawnienia(input_wymagane_uprawnienia), stan_wypozyczenia(0), czas_do_oddania(0), ID_Konta_Wypozyczajacego(0) {}
+	Ksiazka(string input_Nazwa, int input_ID, int input_Filia_ID, bool input_typ_konta)
+		:Nazwa(input_Nazwa), ID(input_ID), Filia_ID(input_Filia_ID), typ_konta(input_typ_konta), stan_wypozyczenia(0), czas_do_oddania(0), ID_Konta_Wypozyczajacego(0) {}
 
 	const bool Get_stan_wypozyczenia() const { return stan_wypozyczenia; }
 	void Set_stan_wypozyczenia(bool x) { stan_wypozyczenia = x; }
@@ -38,45 +38,37 @@ public:
 		if (stan_wypozyczenia == 1)
 			cout << ID_Konta_Wypozyczajacego << endl;
 		else
-			cout << endl;
+			cout << "niewyp" << endl;			//niewypozyczone
 	}
 };
 
 class Biblioteka
 {
 private:
-	int Liczba_Filii;
-	int Liczba_Kont = 0;
-	vector<unique_ptr<Konto>> ListaKont;
-	//Konto* ListaKont[1000];
-	//vector<unique_ptr<Ksiazka>> Zasoby;
-	//Ksiazka* Zasoby[1000];
-	//vector<Filia> ListaFilii;
+	vector<unique_ptr<Konto>> ListaKont;		//postac unique_ptr z powodu dziedziczenia wewnatrz obiektu Konto
 	vector <Ksiazka> Zasoby;
 public:
 	Biblioteka() {}
-	Biblioteka(int input_Liczba_Filii, int input_Liczba_Kont)
-		: Liczba_Filii(input_Liczba_Filii) {
-		Inicjalizacja_Biblioteki(input_Liczba_Kont, Liczba_Filii);}
+	Biblioteka(int input_Liczba_Filii, int input_Liczba_Kont) { Inicjalizacja_Biblioteki(input_Liczba_Kont, input_Liczba_Filii); }
 
-	void Inicjalizacja_Biblioteki(int N_Kont, int N_Filii);
-	void Dodaj_Konto(bool typ, string Nazwisko);
-	void Drukuj_Zasoby();
-	void Drukuj_Konta();
-	void Drukuj_Wypozyczenia_Konta(int Numer_Studenta);
+	void Inicjalizacja_Biblioteki(int N_Kont, int N_Filii);	//generuje wektor losowych ksiazek i wektor losowych kont
+	void Dodaj_Konto(bool typ, string Nazwisko);			//mozliwosc generowania wlasnego konta
+	void Drukuj_Zasoby();									//drukowanie wektora ksiazek ze spisu biblioteki
+	void Drukuj_Konta();									//drukowanie wektora kont ze spisu biblioteki
+	void Drukuj_Wypozyczenia_Konta(int Numer_Konta)		//drukuje instancje wypozyczonych ksiazek konta numer_
+		{ for_each(ListaKont[Numer_Konta]->Wypozyczone.begin(), ListaKont[Numer_Konta]->Wypozyczone.end(), [](Ksiazka k) {k.Drukuj(); });}
 
-	void Wypozycz(int input_ID_ksiazki, int Numer_Studenta);
-	void Oddaj(int input_ID_ksiazki);
-	void Oddaj_Naleznosc(int input_ID_konta);
-	void Przedluz_Ksiazki(int input_ID_konta);
-	void Aktualizuj_Stan_Wypozyczenia(int dlugosc_tury);
+	void Wypozycz(int input_ID_ksiazki, int Numer_Konta);	//wypozycza ksiazke numer_ koncie o numerze_
+	void Oddaj(int input_ID_ksiazki);						//zwraca ksiazke o indeksie_. Nie ma potrzeby podawac danych konta.
+	void Oddaj_Naleznosc(int input_ID_konta);				//zwraca pelna kwote kary za zaleganie z oddawaniem ksiazek
+	void Przedluz_Ksiazki(int input_ID_konta);				//resetuje czas na oddanie ksiazek
+	void Aktualizuj_Stan_Wypozyczenia(int dlugosc_tury);	//wykonuje akcje potrzebne do iteracji po turach, tj naliczenie kar, zmiana terminu oddania ksiazek
 	const int Drukuj_Naleznosc(int input_Numer_Konta) const { return ListaKont[input_Numer_Konta]->Get_Naleznosc(); }
 
-	const int Get_Liczba_Kont()const { return Liczba_Kont; }
 	const int Get_Liczba_Ksiazek()const { return Zasoby.size(); }
 
-	static const int Naleznosc = 1;		//20 groszy za dzien za ksiazke
-	//void Szukaj_Ksiazki_ID(int input_ID_Ksiazki);					//zwraca indeks w wektorze Zasoby
+	static const int Naleznosc = 1;							//20 groszy za dzien za ksiazke
+	//void Szukaj_Ksiazki_ID(int input_ID_Ksiazki);			//zwraca indeks w wektorze Zasoby
 };
 
 void Biblioteka::Inicjalizacja_Biblioteki(int N_Kont, int N_Filii)
@@ -88,21 +80,18 @@ void Biblioteka::Inicjalizacja_Biblioteki(int N_Kont, int N_Filii)
 	{
 		if (Random_Account_Type() == 0)
 		{
-			//ListaKont[i] = new Student(Random_Name(), 100 + i);	//przewidziane 100 miejsc na konta studentow
-			ListaKont.emplace_back(new Student(Random_Name(), 100 + Liczba_Studentow));
+			ListaKont.emplace_back(new Student(Random_Name(), 100 + Liczba_Studentow));			//Studenci zajmuja indeksy 100-200
 			Liczba_Studentow++;
 		}
 		else
 		{
-			//ListaKont[i] = new Pracownik(Random_Name(), 200 + i);	//przewidziane 100 miejsc na konta pracownikow
-			ListaKont.emplace_back(new Pracownik(Random_Name(), 200 + Liczba_Pracownikow));
+			ListaKont.emplace_back(new Pracownik(Random_Name(), 200 + Liczba_Pracownikow));		//Pracownicu zajmuja indeksy 200-300
 			Liczba_Pracownikow++;
 		}
-		Liczba_Kont++;
 	}
 	for (int i = 0; i < N_Filii; i++)
 	{
-		for (int j = 0; j < Random_Book_Number(); j++)
+		for (int j = 0; j < Random_Book_Number(); j++)											//kazda filia posiada losowa ilosc ksiazek
 		{
 			Zasoby.emplace_back(Random_Book_Name(), Numer_ksiazki, i, Random_Privileges());
 			Numer_ksiazki++;
@@ -112,33 +101,28 @@ void Biblioteka::Inicjalizacja_Biblioteki(int N_Kont, int N_Filii)
 
 void Biblioteka::Dodaj_Konto(bool typ, string Nazwisko)
 {
-	int Liczba_Pracownikow = count_if(ListaKont.begin(), ListaKont.end(), [](unique_ptr<Konto>& k) {return k->Get_ID() >= 200; });
-	int Liczba_Studentow = count_if(ListaKont.begin(), ListaKont.end(), [](unique_ptr<Konto>& k) {return k->Get_ID() < 200; });
+	int Liczba_Pracownikow = count_if(ListaKont.begin(), ListaKont.end(), [](unique_ptr<Konto>& k) {return k->Get_ID() >= 200; });	//zlicza konta studenckie
+	int Liczba_Studentow = count_if(ListaKont.begin(), ListaKont.end(), [](unique_ptr<Konto>& k) {return k->Get_ID() < 200; });		//zlicza konta pracownicze
 	if (typ == 0)
 	{
 		ListaKont.emplace_back(new Student(Nazwisko, 100 + Liczba_Studentow));
-		Liczba_Kont++;
 	}
 	else
 	{
 		ListaKont.emplace_back(new Pracownik(Nazwisko, 200 + Liczba_Pracownikow));
-		Liczba_Kont++;
 	}
 }
 
 void Biblioteka::Drukuj_Zasoby()
 {
-	//for (auto i : Zasoby)
-	//for_each(Zasoby.begin(), Zasoby.end(), [](Ksiazka* ep) {ep->Drukuj(); });
 	cout << "Filia_ID" << "\t" << "Nazwa" << "\t\t\t\t\t\t\t" << "ID" << "\t" << "stan_wyp." << "\t" << "czas_do_oddania" << "\t" << "ID konta" << endl;
-	for (int i = 0; i < Zasoby.size(); ++i) { Zasoby[i].Drukuj(); }
+	for_each(Zasoby.begin(), Zasoby.end(), [](Ksiazka k) {k.Drukuj(); });
 }
 
 void Biblioteka::Drukuj_Konta()
 {
-	//for (auto i : Zasoby)
-	//for_each(Zasoby.begin(), Zasoby.end(), [](Ksiazka* ep) {ep->Drukuj(); });
 	cout << "Numer na liscie" << "\t" << "Imie" << "\t" << "Nazwisko" << "\t" << "ID" << "\t" << "Typ" << endl;
+	//for_each(Zasoby.begin(), Zasoby.end(), [](Ksiazka k) {k.Drukuj(); });		//nie, bo potrzebna jest numeracja po i
 	for (int i = 0; i < ListaKont.size(); ++i) 
 	{ 
 		cout << i << "\t\t";
@@ -146,25 +130,19 @@ void Biblioteka::Drukuj_Konta()
 	}
 }
 
-void Biblioteka::Drukuj_Wypozyczenia_Konta(int Numer_Studenta)
-{
-	for (int i = 0; i < ListaKont[Numer_Studenta]->Wypozyczone.size(); i++)
-		ListaKont[Numer_Studenta]->Wypozyczone[i].Drukuj();
-}
-
-void Biblioteka::Wypozycz(int input_ID_ksiazki, int Numer_Studenta)
+void Biblioteka::Wypozycz(int input_ID_ksiazki, int Numer_Konta)
 {
 	if (Zasoby[input_ID_ksiazki].Get_stan_wypozyczenia() == 1)
 		cout << "Przykro nam, ale ksiazka jest juz wypozyczona" << endl;
 	else
 	{
 		Zasoby[input_ID_ksiazki].Set_stan_wypozyczenia(1);
-		Zasoby[input_ID_ksiazki].Set_ID_Konta_Wypozyczajacego(Numer_Studenta);
-		if(ListaKont[Numer_Studenta]->Get_przywileje()==0)
+		Zasoby[input_ID_ksiazki].Set_ID_Konta_Wypozyczajacego(Numer_Konta);
+		if(ListaKont[Numer_Konta]->Get_przywileje()==0)
 			Zasoby[input_ID_ksiazki].Set_czas_do_oddania(30);
 		else
 			Zasoby[input_ID_ksiazki].Set_czas_do_oddania(90);
-		ListaKont[Numer_Studenta]->Wypozyczone.emplace_back(Zasoby[input_ID_ksiazki]);
+		ListaKont[Numer_Konta]->Wypozyczone.emplace_back(Zasoby[input_ID_ksiazki]);
 	}
 }
 
@@ -173,10 +151,11 @@ void Biblioteka::Oddaj(int input_ID_ksiazki)
 	int ID_konta = Zasoby[input_ID_ksiazki].Get_ID_Konta_Wypozyczajacego();
 	auto id = find_if(ListaKont[ID_konta]->Wypozyczone.begin(), ListaKont[ID_konta]->Wypozyczone.end(), [&](Ksiazka k) {return k.GetID() == input_ID_ksiazki; });
 	int index = distance(ListaKont[ID_konta]->Wypozyczone.begin(), id);
-	ListaKont[ID_konta]->Wypozyczone.erase(ListaKont[ID_konta]->Wypozyczone.begin()+index);
-	Zasoby[input_ID_ksiazki].Set_stan_wypozyczenia(0);
-	Zasoby[input_ID_ksiazki].Set_ID_Konta_Wypozyczajacego(NULL);
-	Zasoby[input_ID_ksiazki].Set_czas_do_oddania(0);
+	ListaKont[ID_konta]->Wypozyczone.erase(ListaKont[ID_konta]->Wypozyczone.begin()+index);			//usuwanie instancji z listy ksiazek wewnatrz konta
+
+	Zasoby[input_ID_ksiazki].Set_stan_wypozyczenia(0);												//reset wlasciwosci ksiazki w spisie biblioteki
+	Zasoby[input_ID_ksiazki].Set_ID_Konta_Wypozyczajacego(NULL);									//reset wlasciwosci ksiazki w spisie biblioteki
+	Zasoby[input_ID_ksiazki].Set_czas_do_oddania(0);												//reset wlasciwosci ksiazki w spisie biblioteki
 }
 
 void Biblioteka::Oddaj_Naleznosc(int input_ID_konta)
@@ -190,24 +169,18 @@ void Biblioteka::Przedluz_Ksiazki(int input_ID_konta)
 	for (int i = 0; i < ListaKont[input_ID_konta]->Wypozyczone.size(); i++)
 	{
 		if (ListaKont[input_ID_konta]->Get_przywileje() == 0)
-			ListaKont[input_ID_konta]->Wypozyczone[i].Set_czas_do_oddania(ListaKont[input_ID_konta]->Wypozyczone[i].Get_czas_do_oddania() + 30);
+			ListaKont[input_ID_konta]->Wypozyczone[i].Set_czas_do_oddania(30);
 		else
-			ListaKont[input_ID_konta]->Wypozyczone[i].Set_czas_do_oddania(ListaKont[input_ID_konta]->Wypozyczone[i].Get_czas_do_oddania() + 90);
+			ListaKont[input_ID_konta]->Wypozyczone[i].Set_czas_do_oddania(90);
 	}
 }
 
 void Biblioteka::Aktualizuj_Stan_Wypozyczenia(int dlugosc_tury)
 {
 	for (int i = 0; i < Zasoby.size(); i++)
-	{
 		if (Zasoby[i].Get_stan_wypozyczenia() == 1 && Zasoby[i].Get_czas_do_oddania() >= 5)
-		{
 			Zasoby[i].Set_czas_do_oddania(Zasoby[i].Get_czas_do_oddania() - dlugosc_tury);
-			//ListaKont[Zasoby[i].Get_ID_Konta_Wypozyczajacego()]->Wypozyczone.size();
-		}
-	}
 	for (int i = 0; i < ListaKont.size(); i++)
-	{
 		for (int j = 0; j < ListaKont[i]->Wypozyczone.size(); j++)
 		{
 			if (ListaKont[i]->Wypozyczone[j].Get_czas_do_oddania() >= 5)
@@ -215,7 +188,6 @@ void Biblioteka::Aktualizuj_Stan_Wypozyczenia(int dlugosc_tury)
 			else
 				ListaKont[i]->Set_Naleznosc(ListaKont[i]->Get_Naleznosc()+Naleznosc);
 		}
-	}
 }
 
 //void Biblioteka::Szukaj_Ksiazki_ID(int input_ID_Ksiazki){
